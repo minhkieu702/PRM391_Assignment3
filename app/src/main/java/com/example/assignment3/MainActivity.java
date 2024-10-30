@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == REQUEST_ADD_EVENT && resultCode == RESULT_OK && data != null) {
             Event newEvent = new Event(
                     data.getStringExtra("eventName"),
@@ -60,16 +61,20 @@ public class MainActivity extends AppCompatActivity {
                     data.getStringExtra("description")
             );
             eventList.add(newEvent);
-            adapter.notifyDataSetChanged();
+            adapter.notifyItemInserted(eventList.size() - 1); // Use notifyItemInserted
         } else if (requestCode == REQUEST_EDIT_DELETE_EVENT) {
             int position = data.getIntExtra("position", -1);
-            if (resultCode == RESULT_OK && data.hasExtra("event")) {
+            if (resultCode == RESULT_OK && data != null && data.hasExtra("event")) {
                 Event updatedEvent = (Event) data.getSerializableExtra("event");
-                eventList.set(position, updatedEvent);
-                adapter.notifyDataSetChanged();
+                if (position != -1) {
+                    eventList.set(position, updatedEvent);
+                    adapter.notifyItemChanged(position); // Use notifyItemChanged
+                }
             } else if (resultCode == RESULT_FIRST_USER) {
-                eventList.remove(position);
-                adapter.notifyDataSetChanged();
+                if (position != -1) {
+                    eventList.remove(position);
+                    adapter.notifyItemRemoved(position); // Use notifyItemRemoved
+                }
             }
         }
     }
